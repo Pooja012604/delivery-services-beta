@@ -1,46 +1,48 @@
+// src/pages/Cart.js
 import React, { useContext } from 'react';
-import { Container, Table, Button } from 'react-bootstrap';
 import { CartContext } from '../context/CartContext';
-import { Link } from 'react-router-dom';
+import { Container, Table, Button, Alert } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
+
 function Cart() {
   const { cartItems, removeFromCart } = useContext(CartContext);
 
-  const totalAmount = cartItems.reduce((sum, item) => sum + item.total, 0);
+  const grandTotal = cartItems.reduce((sum, item) => sum + item.total, 0);
+  const navigate = useNavigate();
 
   return (
     <Container className="mt-4">
-      <h2>🛒 Your Cart</h2>
-
+      <h2>Your Cart</h2>
       {cartItems.length === 0 ? (
-        <p>No items in your cart yet.</p>
+        <Alert variant="info">Your cart is empty.</Alert>
       ) : (
         <>
-          <Table striped bordered hover>
+          <Table striped bordered hover responsive className="mt-3">
             <thead>
               <tr>
-                <th>Customer</th>
+                <th>#</th>
                 <th>Store</th>
                 <th>Item</th>
-                <th>Qty</th>
                 <th>Price</th>
+                <th>Qty</th>
                 <th>Total</th>
                 <th>Action</th>
               </tr>
             </thead>
             <tbody>
-              {cartItems.map((item, idx) => (
-                <tr key={idx}>
-                  <td>{item.customer}</td>
+              {cartItems.map((item, index) => (
+                <tr key={index}>
+                  <td>{index + 1}</td>
                   <td>{item.store}</td>
                   <td>{item.item}</td>
-                  <td>{item.quantity}</td>
                   <td>₹{item.price}</td>
+                  <td>{item.quantity}</td>
                   <td>₹{item.total}</td>
                   <td>
                     <Button
                       variant="danger"
                       size="sm"
-                      onClick={() => removeFromCart(idx)}
+                      onClick={() => removeFromCart(index)}
                     >
                       Remove
                     </Button>
@@ -49,13 +51,13 @@ function Cart() {
               ))}
             </tbody>
           </Table>
-          <h4 className="text-end">Total Amount: ₹{totalAmount}</h4>
-          <div className="text-end">
-            <Button variant="success" as={Link} to="/checkout">
-  Proceed to Checkout
-</Button>
-
+          <div className="d-flex justify-content-between align-items-center mt-4">
+          <h4>Grand Total: ₹{grandTotal}</h4>
+         <Button variant="success" onClick={() => navigate('/checkout')}>
+            Proceed to Checkout
+           </Button>
           </div>
+
         </>
       )}
     </Container>

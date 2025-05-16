@@ -1,28 +1,36 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import NavbarComponent from './components/NavbarComponent';
 import Home from './pages/Home';
 import Browse from './pages/Browse';
-import Login from './pages/Login';
-import { CartProvider } from './context/CartContext';
 import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
+import Login from './pages/Login';
+import ThankYou from './pages/Thankyou';
+import AppNavbar from './components/Navbar'; // ✅ navigation bar
+import ProtectedRoute from './components/ProtectedRoute'; // ✅ protects checkout
+
 function App() {
   return (
-    <CartProvider>
-      <Router>
-        <NavbarComponent />
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/browse" element={<Browse />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/cart" element={<Cart />} />
-          <Route path="/checkout" element={<Checkout />} />
-        </Routes>
-      </Router>
-    </CartProvider>
+    <Router>
+      <AppNavbar /> {/* ✅ shows on every page */}
+
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/browse/:storeName" element={<Browse />} />
+        <Route path="/cart" element={<Cart />} />
+        <Route
+          path="/checkout"
+          element={
+            <ProtectedRoute>
+              <Checkout />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/login" element={<Login />} />
+        <Route path="/thank-you" element={<ThankYou />} />
+      </Routes>
+    </Router>
   );
 }
 
 export default App;
-
