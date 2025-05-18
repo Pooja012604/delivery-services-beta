@@ -1,64 +1,34 @@
-import React, { useContext } from 'react';
-import { Container, Row, Col, Card, Button } from 'react-bootstrap';
-import { useNavigate } from 'react-router-dom';
-import storeData from '../data/stores';
-import { LocationContext } from '../context/LocationContext';
+import React from 'react';
+import { Container } from 'react-bootstrap';
+import stores from '../data/stores';
 
 function Home() {
-  const navigate = useNavigate();
-  const { country, state, city } = useContext(LocationContext);
-
-  const handleStoreClick = (storeName) => {
-    navigate(`/browse/${encodeURIComponent(storeName)}`);
-  };
-
   return (
     <Container className="mt-4">
       <h2 className="mb-4 text-center">🌍 Explore Our Trusted Stores</h2>
 
-      {Object.entries(storeData).map(([category, stores]) => {
-        const filteredStores =
-          city && stores.some((store) => store.location === city)
-            ? stores.filter((store) => store.location === city)
-            : stores;
-
-        return (
-          <div key={category} className="mb-5">
-            <h4 className="mb-3 text-capitalize">{category.replace('-', ' ')}</h4>
-
-            {city && stores.every((store) => store.location !== city) && (
-              <p className="text-muted ms-2">
-                No stores available in <strong>{city}</strong>. Showing all stores instead.
-              </p>
-            )}
-
-            <Row>
-              {filteredStores.map((store, index) => (
-                <Col md={4} sm={6} xs={12} key={index} className="mb-4">
-                  <Card className="h-100 shadow-sm">
-                    <Card.Img
-                      variant="top"
-                      src={store.image}
-                      style={{ height: '200px', objectFit: 'cover' }}
-                    />
-                    <Card.Body>
-                      <Card.Title>{store.name}</Card.Title>
-                      <Card.Text><strong>Location:</strong> {store.location}</Card.Text>
-                      <Card.Text>{store.description}</Card.Text>
-                      <Button
-                        variant="primary"
-                        onClick={() => handleStoreClick(store.name)}
-                      >
-                        View Products
-                      </Button>
-                    </Card.Body>
-                  </Card>
-                </Col>
-              ))}
-            </Row>
+      {Object.entries(stores).map(([category, storeList]) => (
+        <div key={category} className="mb-5">
+          <h4 className="mb-3">{category}</h4>
+          <div className="d-flex flex-wrap gap-4">
+            {storeList.map((store, index) => (
+              <div key={index} className="card" style={{ width: '18rem' }}>
+                <img src={store.image} className="card-img-top" alt={store.name} />
+                <div className="card-body">
+                  <h5 className="card-title">{store.name}</h5>
+                  <p className="card-text">
+                    <strong>Location:</strong> {store.location}
+                  </p>
+                  <p className="card-text">{store.description}</p>
+                  <a href={`/browse/${encodeURIComponent(store.name)}`} className="btn btn-primary">
+                    View Products
+                  </a>
+                </div>
+              </div>
+            ))}
           </div>
-        );
-      })}
+        </div>
+      ))}
     </Container>
   );
 }
