@@ -6,9 +6,12 @@ import { useNavigate } from 'react-router-dom';
 
 function Cart() {
   const { cartItems, removeFromCart } = useContext(CartContext);
-
-  const grandTotal = cartItems.reduce((sum, item) => sum + item.total, 0);
   const navigate = useNavigate();
+
+  const grandTotal = cartItems.reduce((sum, item) => {
+    const qty = parseInt(item.quantity) || 1;
+    return sum + item.price * qty;
+  }, 0);
 
   return (
     <Container className="mt-4">
@@ -30,34 +33,27 @@ function Cart() {
               </tr>
             </thead>
             <tbody>
-              {cartItems.map((item, index) => (
-                <tr key={index}>
-                  <td>{index + 1}</td>
-                  <td>{item.store}</td>
-                  <td>{item.item}</td>
-                  <td>₹{item.price}</td>
-                  <td>{item.quantity}</td>
-                  <td>₹{item.total}</td>
-                  <td>
-                    <Button
-                      variant="danger"
-                      size="sm"
-                      onClick={() => removeFromCart(index)}
-                    >
-                      Remove
-                    </Button>
-                  </td>
-                </tr>
-              ))}
+              {cartItems.map((item, index) => {
+                const qty = parseInt(item.quantity) || 1;
+                const total = item.price * qty;
+                return (
+                  <tr key={index}>
+                    <td>{index + 1}</td>
+                    <td>{item.store || '-'}</td>
+                    <td>{item.name}</td>
+                    <td>₹{item.price}</td>
+                    <td>{qty}</td>
+                    <td>₹{total}</td>
+                    <td>
+                      <Button variant="danger" onClick={() => removeFromCart(index)}>Remove</Button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </Table>
-          <div className="d-flex justify-content-between align-items-center mt-4">
-          <h4>Grand Total: ₹{grandTotal}</h4>
-         <Button variant="success" onClick={() => navigate('/checkout')}>
-            Proceed to Checkout
-           </Button>
-          </div>
-
+          <h4 className="mt-3">Grand Total: ₹{grandTotal}</h4>
+          <Button className="mt-3" onClick={() => navigate('/checkout')} variant="success">Proceed to Checkout</Button>
         </>
       )}
     </Container>

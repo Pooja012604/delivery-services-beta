@@ -1,31 +1,27 @@
 import React, { useContext } from 'react';
-import { Table, Button } from 'react-bootstrap';
+import { Container, Table, Button } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { CartContext } from '../context/CartContext';
 
-const Checkout = () => {
-  const { cartItems, setCartItems } = useContext(CartContext);
+function Checkout() {
+  const { cartItems } = useContext(CartContext);
   const navigate = useNavigate();
 
-  const handleOrder = () => {
-    const isLoggedIn = localStorage.getItem('isLoggedIn');
-    if (!isLoggedIn || isLoggedIn !== 'true') {
-      alert('Please login to place the order.');
-      navigate('/login');
-      return;
-    }
+  // ✅ Ensure qty is converted to number before multiplying
+  const total = cartItems.reduce((sum, item) => {
+    const qty = Number(item.qty) || 1;
+    return sum + item.price * qty;
+  }, 0);
 
-    // Optionally: Send order to backend or save it
-    setCartItems([]);
-    navigate('/thank-you');
+  const handleProceed = () => {
+    navigate('/checkout/details');
   };
 
-  const grandTotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-
   return (
-    <div className="container mt-5">
+    <Container className="mt-4">
       <h2 className="mb-4">Review Your Order</h2>
-      <Table striped bordered hover>
+
+      <Table bordered responsive>
         <thead>
           <tr>
             <th>#</th>
@@ -37,24 +33,31 @@ const Checkout = () => {
           </tr>
         </thead>
         <tbody>
-          {cartItems.map((item, index) => (
-            <tr key={index}>
-              <td>{index + 1}</td>
-              <td>{item.store}</td>
-              <td>{item.item}</td>
-              <td>₹{item.price}</td>
-              <td>{item.quantity}</td>
-              <td>₹{item.price * item.quantity}</td>
-            </tr>
-          ))}
+          {cartItems.map((item, index) => {
+            const qty = Number(item.qty) || 1;
+            return (
+              <tr key={index}>
+                <td>{index + 1}</td>
+                <td>{item.store || '-'}</td>
+                <td>{item.name}</td>
+                <td>₹{item.price}</td>
+                <td>{qty}</td>
+                <td>₹{item.price * qty}</td>
+              </tr>
+            );
+          })}
         </tbody>
       </Table>
-      <h4 className="mt-4 text-end">Total Payable: ₹{grandTotal}</h4>
+
+      <h4 className="text-end">Total Payable: ₹{total}</h4>
+
       <div className="text-end mt-3">
-        <Button variant="success" onClick={handleOrder}>Place Order</Button>
+        <Button variant="success" onClick={handleProceed}>
+          Proceed to Payment
+        </Button>
       </div>
-    </div>
+    </Container>
   );
-};
+}
 
 export default Checkout;

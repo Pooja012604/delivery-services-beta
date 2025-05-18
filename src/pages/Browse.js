@@ -1,6 +1,6 @@
 import React, { useContext, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Container, Row, Col, Card, Button, Form } from 'react-bootstrap';
+import { Container, Row, Col, Card, Button, Form, Alert } from 'react-bootstrap';
 import stores from '../data/stores';
 import { CartContext } from '../context/CartContext';
 
@@ -8,17 +8,32 @@ function Browse() {
   const { storeName } = useParams();
   const decodedStoreName = decodeURIComponent(storeName);
 
-  // Flatten all store categories into one array
   const allStores = Object.values(stores).flat();
   const store = allStores.find((s) => s.name === decodedStoreName);
 
   const { addToCart } = useContext(CartContext);
-
-  // ✅ Shared quantity state, mapped by product index
   const [quantities, setQuantities] = useState({});
+  const [showAlert, setShowAlert] = useState(false);
 
   const handleQuantityChange = (index, value) => {
-    setQuantities((prev) => ({ ...prev, [index]: parseInt(value) }));
+    setQuantities((prev) => ({
+      ...prev,
+      [index]: Math.max(1, parseInt(value) || 1),
+    }));
+  };
+
+  const handleAddToCart = (product, index) => {
+    const quantity = quantities[index] || 1;
+
+    // ✅ Add store name to product before adding to cart
+    const productWithStore = {
+      ...product,
+      store: store.name,
+    };
+
+    addToCart(productWithStore, quantity);
+    setShowAlert(true);
+    setTimeout(() => setShowAlert(false), 2000);
   };
 
   if (!store) {
@@ -31,63 +46,42 @@ function Browse() {
 
   return (
     <Container className="mt-4">
-      <h2 className="mb-1">{store.name}</h2>
-      <p className="text-muted">
-        <strong>Location:</strong> {store.location} &nbsp; | &nbsp;
-        <strong>Category:</strong> {store.category}
-      </p>
-      <hr />
+      <h2 className="mb-4 text-center">🛍️ Products from {store.name}</h2>
+
+      {showAlert && (
+        <Alert variant="success" className="text-center">
+          ✅ Item added to cart!
+        </Alert>
+      )}
 
       <Row>
-        {store.products.map((product, index) => {
-          const qty = quantities[index] || 1;
-
-          return (
-            <Col md={4} sm={6} xs={12} key={index} className="mb-4">
-              <Card className="h-100 shadow-sm">
-                {product.image && (
-                  <Card.Img
-                    variant="top"
-                    src={product.image}
-                    alt={product.name}
-                    style={{ height: '220px', objectFit: 'cover' }}
+        {store.products.map((product, index) => (
+          <Col md={4} sm={6} xs={12} key={index} className="mb-4">
+            <Card className="h-100 shadow-sm">
+              <Card.Img
+                variant="top"
+                src={product.image}
+                style={{ height: '200px', objectFit: 'cover' }}
+              />
+              <Card.Body>
+                <Card.Title>{product.name}</Card.Title>
+                <Card.Text>Price: ₹{product.price}</Card.Text>
+                <Form.Group>
+                  <Form.Label>Quantity</Form.Label>
+                  <Form.Control
+                    type="number"
+                    min="1"
+                    value={quantities[index] || 1}
+                    onChange={(e) => handleQuantityChange(index, e.target.value)}
                   />
-                )}
-                <Card.Body className="d-flex flex-column justify-content-between">
-                  <div>
-                    <Card.Title>{product.name}</Card.Title>
-                    <Card.Text>₹{product.price}</Card.Text>
-                    <Form.Group className="mb-2">
-                      <Form.Label>Quantity:</Form.Label>
-                      <Form.Select
-                        value={qty}
-                        onChange={(e) => handleQuantityChange(index, e.target.value)}
-                      >
-                        {[1, 2, 3, 4, 5].map((num) => (
-                          <option key={num} value={num}>{num}</option>
-                        ))}
-                      </Form.Select>
-                    </Form.Group>
-                  </div>
-                  <Button
-                    variant="primary"
-                    onClick={() =>
-                      addToCart({
-                        store: store.name,
-                        item: product.name,
-                        price: product.price,
-                        quantity: qty,
-                        total: product.price * qty,
-                      })
-                    }
-                  >
-                    Add to Cart
-                  </Button>
-                </Card.Body>
-              </Card>
-            </Col>
-          );
-        })}
+                </Form.Group>
+                <Button className="mt-2 w-100" onClick={() => handleAddToCart(product, index)}>
+                  Add to Cart
+                </Button>
+              </Card.Body>
+            </Card>
+          </Col>
+        ))}
       </Row>
     </Container>
   );
