@@ -22,10 +22,13 @@ function Register() {
     setErrorMsg('');
 
     try {
-      // ✅ REPLACE this URL with your actual Render backend URL
-      await axios.post('https://delivery-services-beta.onrender.com/', formData, {
-        headers: { 'Content-Type': 'application/json' },
-      });
+      await axios.post(
+        'https://delivery-services-beta.onrender.com/api/register',
+        formData,
+        {
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
 
       // Redirect to login page after success
       navigate('/login');
