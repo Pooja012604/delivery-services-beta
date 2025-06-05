@@ -22,11 +22,12 @@ function Register() {
     setErrorMsg('');
 
     try {
-      await axios.post('http://localhost:5000/api/register', formData, {
+      // ✅ REPLACE this URL with your actual Render backend URL
+      await axios.post('https://delivery-services-beta.onrender.com/', formData, {
         headers: { 'Content-Type': 'application/json' },
       });
 
-      // After successful registration, redirect to login
+      // Redirect to login page after success
       navigate('/login');
     } catch (err) {
       setErrorMsg(err.response?.data?.message || 'Registration failed');
