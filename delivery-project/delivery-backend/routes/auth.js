@@ -14,17 +14,13 @@ router.post("/register", async (req, res) => {
       return res.status(400).json({ message: "User already exists" });
     }
 
-    // Hash password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-
-    // Assign role
+    // ✅ DO NOT manually hash — Mongoose model will handle it
     let role = "customer";
     if (email === "admin@example.com") {
       role = "admin";
     }
 
-    const newUser = new User({ name, email, password: hashedPassword, role });
+    const newUser = new User({ name, email, password, role });
     await newUser.save();
 
     console.log(`✅ Registered user: ${email} (role: ${role})`);
