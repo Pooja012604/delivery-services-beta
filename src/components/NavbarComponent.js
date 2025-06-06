@@ -1,98 +1,113 @@
-import React, { useContext } from 'react';
-import {
-  Navbar,
-  Nav,
-  Container,
-  Form,
-  FormControl,
-  Button,
-  Dropdown,
-} from 'react-bootstrap';
+import React, { useState, useContext, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { FaShoppingCart, FaUser } from 'react-icons/fa';
 import { LocationContext } from '../context/LocationContext';
+import { CartContext } from '../context/CartContext';
 
 function NavbarComponent() {
-  const { country, setCountry } = useContext(LocationContext);
+  const { selectedCountry, setSelectedCountry } = useContext(LocationContext);
+  const { cartItems } = useContext(CartContext);
+  const user = JSON.parse(localStorage.getItem('user'));
   const navigate = useNavigate();
 
-  const countryOptions = ['USA', 'India', 'UK', 'Canada', 'Australia'];
-  const user = JSON.parse(localStorage.getItem('user'));
+  const [searchInput, setSearchInput] = useState('');
+  const [suggestions, setSuggestions] = useState([]);
+  const [isNavCollapsed, setIsNavCollapsed] = useState(true);
 
-  const handleCountryChange = (e) => {
-    setCountry(e.target.value);
-  };
-
-  const handleLoginClick = () => {
-    navigate('/login');
-  };
+  const suggestionList = [
+    'Dadu Sweets',
+    'Return Gifts',
+    'Gold Shops',
+    'Pulla Reddy',
+    'Ethnic Wear',
+    'Home Decor',
+  ];
 
   const handleLogout = () => {
     localStorage.removeItem('user');
-    navigate('/login'); // ✅ controlled redirect instead of reload
+    localStorage.removeItem('token');
+    navigate('/login');
   };
 
+  const handleSearchChange = (e) => {
+    const value = e.target.value;
+    setSearchInput(value);
+    const filtered = suggestionList.filter((item) =>
+      item.toLowerCase().includes(value.toLowerCase())
+    );
+    setSuggestions(filtered);
+  };
+
+  const cartCount = cartItems.reduce((total, item) => total + item.quantity, 0);
+
   return (
-    <Navbar bg="dark" variant="dark" expand="lg" className="py-3 shadow-sm">
-      <Container fluid>
-        <Navbar.Brand as={Link} to="/" className="d-flex align-items-center">
-          <span role="img" aria-label="logo" className="me-2">🛍️</span>
-          <strong>Delivery Services</strong>
-        </Navbar.Brand>
+    <nav className="navbar navbar-expand-lg navbar-dark bg-dark px-3">
+      <Link to="/" className="navbar-brand fw-bold text-white">
+        <span role="img" aria-label="cart">🛍️</span> Delivery Services
+      </Link>
 
-        <Form className="d-flex mx-auto w-50">
-          <FormControl
-            type="search"
+      <button
+        className="navbar-toggler"
+        type="button"
+        aria-controls="navbarNav"
+        aria-expanded={!isNavCollapsed}
+        aria-label="Toggle navigation"
+        onClick={() => setIsNavCollapsed(!isNavCollapsed)}
+      >
+        <span className="navbar-toggler-icon"></span>
+      </button>
+
+      <div className={`collapse navbar-collapse ${!isNavCollapsed ? 'show' : ''}`} id="navbarNav">
+        <div className="d-flex flex-grow-1 align-items-center mt-2 mt-lg-0">
+          <input
+            type="text"
+            className="form-control me-2"
             placeholder="Search items or stores"
-            className="me-2"
-            aria-label="Search"
+            value={searchInput}
+            onChange={handleSearchChange}
           />
-        </Form>
-
-        <Nav className="align-items-center">
-          <Form.Select
-            value={country}
-            onChange={handleCountryChange}
-            className="me-3"
-            style={{ width: '140px' }}
+          <select
+            className="form-select me-3"
+            value={selectedCountry}
+            onChange={(e) => setSelectedCountry(e.target.value)}
           >
-            <option value="">Country</option>
-            {countryOptions.map((ctry) => (
-              <option key={ctry}>{ctry}</option>
-            ))}
-          </Form.Select>
+            <option value="India">India</option>
+            <option value="USA">USA</option>
+          </select>
+        </div>
 
+        <div className="d-flex align-items-center gap-3 mt-2 mt-lg-0">
           {user ? (
-            <Dropdown align="end" className="me-3">
-              <Dropdown.Toggle variant="outline-light" size="sm">
-                👤 {user.name}
-              </Dropdown.Toggle>
-              <Dropdown.Menu>
-                <Dropdown.Item as={Link} to="/orders">My Orders</Dropdown.Item>
-                <Dropdown.Divider />
-                <Dropdown.Item onClick={handleLogout}>Logout</Dropdown.Item>
-              </Dropdown.Menu>
-            </Dropdown>
+            <>
+              <div className="btn btn-outline-light btn-sm d-flex align-items-center gap-1">
+                <FaUser />
+                <span>{user.name}</span>
+              </div>
+              <button className="btn btn-outline-light btn-sm" onClick={handleLogout}>
+                Logout
+              </button>
+            </>
           ) : (
-            <Button
-              variant="outline-light"
-              size="sm"
-              onClick={handleLoginClick}
-            >
+            <Link to="/login" className="btn btn-outline-light btn-sm">
               Login / Signup
-            </Button>
+            </Link>
           )}
 
-          <Button
-            variant="outline-light"
-            size="sm"
-            onClick={() => navigate('/cart')}
-            className="ms-2"
-          >
-            🛒 Cart
-          </Button>
-        </Nav>
-      </Container>
-    </Navbar>
+          <Link to="/cart" className="position-relative btn btn-outline-light btn-sm d-flex align-items-center">
+            <FaShoppingCart />
+            <span className="ms-2">Cart</span>
+            {cartCount > 0 && (
+              <span
+                className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                style={{ fontSize: '0.7rem' }}
+              >
+                {cartCount}
+              </span>
+            )}
+          </Link>
+        </div>
+      </div>
+    </nav>
   );
 }
 

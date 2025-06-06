@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Container, Form, Button, Alert } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import Swal from 'sweetalert2';
 
 function Register() {
   const [formData, setFormData] = useState({
@@ -22,16 +23,18 @@ function Register() {
     setErrorMsg('');
 
     try {
-      await axios.post(
-        'https://delivery-services-beta.onrender.com/api/register',
-        formData,
-        {
-          headers: { 'Content-Type': 'application/json' },
-        }
-      );
+      await axios.post('https://delivery-services-beta.onrender.com/api/register', formData, {
+        headers: { 'Content-Type': 'application/json' },
+      });
 
-      // Redirect to login page after success
-      navigate('/login');
+      Swal.fire({
+        title: 'Registration Successful!',
+        text: 'You can now log in.',
+        icon: 'success',
+        confirmButtonText: 'Go to Login',
+      }).then(() => {
+        navigate('/login');
+      });
     } catch (err) {
       setErrorMsg(err.response?.data?.message || 'Registration failed');
     }
