@@ -13,14 +13,16 @@ function Login() {
     e.preventDefault();
 
     try {
-      const response = await axios.post('https://delivery-services-beta.onrender.com/', {
+      const response = await axios.post('https://delivery-services-beta.onrender.com/api/login', {
         email,
         password,
       });
 
+      // Save token and user info to localStorage
       localStorage.setItem('token', response.data.token);
       localStorage.setItem('user', JSON.stringify(response.data.user));
 
+      // Redirect to homepage
       navigate('/');
     } catch (err) {
       console.error('❌ Login error:', err);
