@@ -29,7 +29,7 @@ function CheckoutForm() {
 
     try {
       await axios.post(
-        "http://localhost:5000/api/orders",
+        "https://delivery-services-beta.onrender.com/api/orders",
         {
           customerName: form.name,
           address: form.address,
