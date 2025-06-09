@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useContext } from 'react'; // removed useEffect
 import { Link, useNavigate } from 'react-router-dom';
 import { FaShoppingCart, FaUser, FaHeart } from 'react-icons/fa';
 import { LocationContext } from '../context/LocationContext';
@@ -7,37 +7,19 @@ import { CartContext } from '../context/CartContext';
 function NavbarComponent() {
   const { selectedCountry, setSelectedCountry } = useContext(LocationContext);
   const { cartItems } = useContext(CartContext);
-  const [wishlistCount, setWishlistCount] = useState(0);
   const [isNavCollapsed, setIsNavCollapsed] = useState(true);
   const user = JSON.parse(localStorage.getItem('user'));
   const navigate = useNavigate();
 
   const cartCount = cartItems.reduce((sum, item) => sum + (parseInt(item.quantity) || 1), 0);
 
-  useEffect(() => {
-    const fetchWishlist = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        const res = await fetch('http://localhost:5000/api/wishlist', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        const data = await res.json();
-        setWishlistCount(data.length || 0);
-      } catch (err) {
-        console.error('Wishlist fetch error:', err);
-      }
-    };
-
-    if (user) fetchWishlist();
-  }, [user]);
-
-  if (user?.isAdmin) return null;
-
   const handleLogout = () => {
     localStorage.removeItem('user');
     localStorage.removeItem('token');
     navigate('/login');
   };
+
+  if (user?.isAdmin) return null;
 
   return (
     <nav className="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm py-3">
@@ -75,13 +57,8 @@ function NavbarComponent() {
                   <FaUser className="me-2" /> {user.name}
                 </span>
 
-                <Link className="btn btn-outline-light position-relative" to="/wishlist">
+                <Link className="btn btn-outline-light" to="/wishlist">
                   <FaHeart />
-                  {wishlistCount > 0 && (
-                    <span className="position-absolute top-0 start-100 translate-middle badge bg-danger rounded-pill">
-                      {wishlistCount}
-                    </span>
-                  )}
                 </Link>
 
                 <button className="btn btn-outline-light" onClick={handleLogout}>
