@@ -5,6 +5,7 @@ const dotenv = require("dotenv");
 
 const authRoutes = require("./routes/auth");
 const orderRoutes = require("./routes/orders");
+const wishlistRoutes = require("./routes/wishlist"); // ✅ added this
 
 dotenv.config();
 
@@ -17,7 +18,7 @@ app.use(express.json());
 
 // MongoDB connection
 mongoose
-  .connect(process.env.MONGO_URL, {  // ✅ changed from MONGO_URI
+  .connect(process.env.MONGO_URL, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
@@ -27,6 +28,7 @@ mongoose
 // Routes
 app.use("/api", authRoutes);             // login/register
 app.use("/api/orders", orderRoutes);     // orders & admin
+app.use("/api/wishlist", wishlistRoutes); // ✅ wishlist route
 
 // Root test route
 app.get("/", (req, res) => {

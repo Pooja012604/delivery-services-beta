@@ -1,18 +1,25 @@
 import React, { useContext, useState } from 'react';
 import { useParams, Navigate } from 'react-router-dom';
-import { Container, Row, Col, Card, Button, Form, Alert } from 'react-bootstrap';
+import {
+  Container,
+  Row,
+  Col,
+  Card,
+  Button,
+  Form,
+  Toast,
+  ToastContainer
+} from 'react-bootstrap';
 import stores from '../data/stores';
 import { CartContext } from '../context/CartContext';
 
 function Browse() {
-  // ✅ All hooks at the top
   const { storeName } = useParams();
   const decodedStoreName = decodeURIComponent(storeName);
   const { addToCart } = useContext(CartContext);
   const [quantities, setQuantities] = useState({});
   const [showAlert, setShowAlert] = useState(false);
 
-  // ✅ Admin redirect logic placed AFTER hooks
   const user = JSON.parse(localStorage.getItem("user"));
   if (user?.role === "admin") {
     return <Navigate to="/admin" />;
@@ -53,11 +60,21 @@ function Browse() {
     <Container className="mt-4">
       <h2 className="mb-4 text-center">🛍️ Products from {store.name}</h2>
 
-      {showAlert && (
-        <Alert variant="success" className="text-center">
-          ✅ Item added to cart!
-        </Alert>
-      )}
+      {/* Toast - centered bottom */}
+      <ToastContainer
+        className="position-fixed bottom-0 start-50 translate-middle-x mb-4"
+        style={{ zIndex: 1055 }}
+      >
+        <Toast
+          bg="success"
+          show={showAlert}
+          onClose={() => setShowAlert(false)}
+          delay={2000}
+          autohide
+        >
+          <Toast.Body className="text-white">✅ Item added to cart!</Toast.Body>
+        </Toast>
+      </ToastContainer>
 
       <Row>
         {store.products.map((product, index) => (

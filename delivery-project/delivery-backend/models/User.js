@@ -19,7 +19,15 @@ const userSchema = new mongoose.Schema({
     type: String,
     enum: ["customer", "admin"],
     default: "customer"
-  }
+  },
+  wishlist: [
+    {
+      name: String,
+      price: Number,
+      quantity: Number,
+      store: String
+    }
+  ]
 });
 
 // Hash password before saving

@@ -1,17 +1,38 @@
-// src/pages/Cart.js
 import React, { useContext } from 'react';
 import { CartContext } from '../context/CartContext';
 import { Container, Table, Button, Alert } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 
 function Cart() {
-  const { cartItems, removeFromCart } = useContext(CartContext);
+  const { cartItems, removeFromCart, setCartItems } = useContext(CartContext);
   const navigate = useNavigate();
 
-  const grandTotal = cartItems.reduce((sum, item) => {
-    const qty = parseInt(item.quantity) || 1;
-    return sum + item.price * qty;
-  }, 0);
+  const grandTotal = cartItems.reduce(
+    (sum, item) => sum + item.price * (parseInt(item.quantity) || 1),
+    0
+  );
+
+  const moveToWishlist = async (item, index) => {
+    try {
+      const token = localStorage.getItem('token');
+      console.log("\ud83d\udce4 Sending item to wishlist:", item);
+      await fetch('http://localhost:5000/api/wishlist/add', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ item })
+      });
+
+      const updatedCart = [...cartItems];
+      updatedCart.splice(index, 1);
+      setCartItems(updatedCart);
+      navigate('/wishlist');
+    } catch (err) {
+      console.error('Error adding to wishlist:', err);
+    }
+  };
 
   return (
     <Container className="mt-4">
@@ -39,13 +60,18 @@ function Cart() {
                 return (
                   <tr key={index}>
                     <td>{index + 1}</td>
-                    <td>{item.store || '-'}</td>
+                    <td>{item.store}</td>
                     <td>{item.name}</td>
                     <td>₹{item.price}</td>
                     <td>{qty}</td>
                     <td>₹{total}</td>
                     <td>
-                      <Button variant="danger" onClick={() => removeFromCart(index)}>Remove</Button>
+                      <Button variant="secondary" className="me-2" onClick={() => moveToWishlist(item, index)}>
+                        Move to Wishlist
+                      </Button>
+                      <Button variant="danger" onClick={() => removeFromCart(index)}>
+                        Remove
+                      </Button>
                     </td>
                   </tr>
                 );
@@ -53,7 +79,9 @@ function Cart() {
             </tbody>
           </Table>
           <h4 className="mt-3">Grand Total: ₹{grandTotal}</h4>
-          <Button className="mt-3" onClick={() => navigate('/checkout')} variant="success">Proceed to Checkout</Button>
+          <Button className="mt-3" onClick={() => navigate('/checkout')} variant="success">
+            Proceed to Checkout
+          </Button>
         </>
       )}
     </Container>

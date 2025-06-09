@@ -11,57 +11,31 @@ import ThankYou from './pages/Thankyou';
 import AppNavbar from './components/NavbarComponent';
 import ProtectedRoute from './components/ProtectedRoute';
 import { LocationProvider } from './context/LocationContext';
-import { CartProvider } from './context/CartContext'; // ✅ Added
+import { CartProvider } from './context/CartContext';
 import CheckoutForm from './pages/CheckoutForm';
 import AdminDashboard from "./pages/AdminDashboard";
+import Wishlist from './pages/Wishlist'; // ✅ Add this
 
 function App() {
   const user = JSON.parse(localStorage.getItem("user"));
 
   return (
     <Router>
-      <CartProvider> {/* ✅ Wrap entire app with CartProvider */}
+      <CartProvider>
         <LocationProvider>
           <AppNavbar />
           <Routes>
             <Route path="/" element={<Home />} />
-
-            {/* Admin route protection */}
-            <Route
-              path="/admin"
-              element={
-                user?.role === "admin" ? (
-                  <AdminDashboard />
-                ) : (
-                  <Navigate to="/" replace />
-                )
-              }
-            />
-
-            {/* Browsing & Shopping */}
+            <Route path="/admin" element={user?.role === "admin" ? <AdminDashboard /> : <Navigate to="/" replace />} />
             <Route path="/browse" element={<Browse />} />
             <Route path="/browse/:storeName" element={<Browse />} />
             <Route path="/cart" element={<Cart />} />
-
-            {/* Protected Checkout */}
-            <Route
-              path="/checkout"
-              element={
-                <ProtectedRoute>
-                  <Checkout />
-                </ProtectedRoute>
-              }
-            />
+            <Route path="/wishlist" element={<Wishlist />} /> {/* ✅ New route */}
+            <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
             <Route path="/checkout/details" element={<CheckoutForm />} />
-
-            {/* Auth */}
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-
-            {/* Order confirmation */}
             <Route path="/thankyou" element={<ThankYou />} />
-
-            {/* Redirects */}
             <Route path="/select-location" element={<Navigate to="/browse" replace />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

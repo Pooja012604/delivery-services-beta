@@ -1,13 +1,35 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { FaShoppingCart, FaUser } from 'react-icons/fa';
+import { FaShoppingCart, FaUser, FaHeart } from 'react-icons/fa';
 import { LocationContext } from '../context/LocationContext';
+import { CartContext } from '../context/CartContext';
 
 function NavbarComponent() {
   const { selectedCountry, setSelectedCountry } = useContext(LocationContext);
+  const { cartItems } = useContext(CartContext);
+  const [wishlistCount, setWishlistCount] = useState(0);
   const [isNavCollapsed, setIsNavCollapsed] = useState(true);
   const user = JSON.parse(localStorage.getItem('user'));
   const navigate = useNavigate();
+
+  const cartCount = cartItems.reduce((sum, item) => sum + (parseInt(item.quantity) || 1), 0);
+
+  useEffect(() => {
+    const fetchWishlist = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch('/api/wishlist', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = await res.json();
+        setWishlistCount(data.length || 0);
+      } catch (err) {
+        console.error('Wishlist fetch error:', err);
+      }
+    };
+
+    if (user) fetchWishlist();
+  }, [user]);
 
   if (user?.isAdmin) return null;
 
@@ -20,10 +42,9 @@ function NavbarComponent() {
   return (
     <nav className="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm py-3">
       <div className="container-fluid px-4">
-        <Link className="navbar-brand fw-bold d-flex align-items-center" to="/">
-          <span role="img" aria-label="logo" className="me-2">🛍️</span> Delivery Services
+        <Link className="navbar-brand fw-bold" to="/">
+          🛍️ Delivery Services
         </Link>
-
         <button
           className="navbar-toggler"
           type="button"
@@ -34,15 +55,10 @@ function NavbarComponent() {
 
         <div className={`${isNavCollapsed ? 'collapse' : ''} navbar-collapse justify-content-between`}>
           <div className="mx-auto w-50">
-            <input
-              type="text"
-              className="form-control"
-              placeholder="Search items or stores"
-              style={{ borderRadius: '8px' }}
-            />
+            <input type="text" className="form-control" placeholder="Search items or stores" />
           </div>
 
-          <div className="d-flex align-items-center gap-3">
+          <div className="d-flex align-items-center gap-3 mt-3 mt-lg-0">
             <select
               className="form-select"
               style={{ maxWidth: '140px' }}
@@ -58,14 +74,31 @@ function NavbarComponent() {
                 <span className="text-white d-flex align-items-center">
                   <FaUser className="me-2" /> {user.name}
                 </span>
-                <button className="btn btn-outline-light" onClick={handleLogout}>Logout</button>
+
+                <Link className="btn btn-outline-light position-relative" to="/wishlist">
+                  <FaHeart />
+                  {wishlistCount > 0 && (
+                    <span className="position-absolute top-0 start-100 translate-middle badge bg-danger rounded-pill">
+                      {wishlistCount}
+                    </span>
+                  )}
+                </Link>
+
+                <button className="btn btn-outline-light" onClick={handleLogout}>
+                  Logout
+                </button>
               </>
             ) : (
-              <Link to="/login" className="btn btn-outline-light">Login / Signup</Link>
+              <Link className="btn btn-outline-light" to="/login">Login / Signup</Link>
             )}
 
-            <Link className="btn btn-outline-light" to="/cart">
-              <FaShoppingCart className="me-1" /> Cart
+            <Link className="btn btn-outline-light position-relative" to="/cart">
+              <FaShoppingCart />
+              {cartCount > 0 && (
+                <span className="position-absolute top-0 start-100 translate-middle badge bg-danger rounded-pill">
+                  {cartCount}
+                </span>
+              )}
             </Link>
           </div>
         </div>
